@@ -3,14 +3,14 @@
 (defparameter +tabHash+
   (make-hash-table :test #'eq))
 
-(defun creer-grid (size)
-  (make-array (list (* size size) (* size size))))
-
 (defparameter +grid+
   (creer-grid +SIZE+))
 
 (defparameter +grid-access+
   (creer-grid +SIZE+))
+
+(defun creer-grid (size)
+  (make-array (list (* size size) (* size size))))
 
 (defun initialiser-hash(size)
   (if (> size 26)
@@ -28,7 +28,7 @@
       (initialiser-hash-term (1- size) (butlast list))))
 
 (defun init-all(size)
-  (initialiser-hash size)
+  (initialiser-hash (* size size))
   (if (not (= size +SIZE+))
       (progn 
 	(setf +grid+ (creer-grid size))
@@ -36,7 +36,7 @@
       T))
       
 
-(defun set-tile(hauteur largeur valeur)
+(defun set-tile(largeur hauteur valeur)
   (let ((taille (car (array-dimensions +grid+)))
 	(l (1- (getHash largeur +tabHash+)))
 	(h (1- hauteur)))
@@ -54,12 +54,18 @@
 	  NIL
 	  (test-ligne (1- n) h valeur))))
 
-(defun test-colonne(n l valeur)
+(defun test-colonne(l n valeur)
   (if (< n 0)
       T
       (if (= (aref +grid+ n l) valeur)
 	  NIL
 	  (test-colonne l (1- n) valeur))))
+
+
+(defun test-carre(l h valeur)
+  (let ((x (* (floor (/ l +SIZE+)) +SIZE+))
+	(y (* (floor (/ h +SIZE+)) +SIZE+)))
+    (test-carre-recX (1- +SIZE+) x y valeur)))
 
 (defun test-carre-recX(n x y valeur)
   (if (< n 0)
@@ -75,10 +81,19 @@
 	  NIL
 	  (test-carre-recY (1- n) x y valeur))))
 
-(defun test-carre(l h valeur)
-  (let ((x (floor (/ l +SIZE+)))
-	(y (floor (/ h +SIZE+))))
-    (test-carre-recX (1- +SIZE+) x y valeur)))
+(defun jeu-de-test ()
+  (let ((longueur (1- (* +SIZE+ +SIZE+))))
+    (assert (init-all +SIZE+))
+    (assert (set-tile 'b 5 6))
+    (assert (set-tile 'f 6 9))
+    (assert (set-tile 'a 1 1))
+    (assert (not (test-ligne longueur 0 1)))
+    (assert (test-ligne longueur 3 8))
+    (assert (not (test-colonne 0 longueur 1)))
+    (assert (test-colonne 0 longueur 2))
+    (assert (test-carre 8 8 4))
+    (assert (not (test-carre 5 5 9))))
+  T)
     
   
   
