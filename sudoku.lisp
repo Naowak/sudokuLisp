@@ -133,7 +133,48 @@
 	  (copy-grid-recY grid l (1+ h))))))
 	
     
-  
+(defun print-grid(grid)
+  (declare (ignore grid))
+  (let ((alphabet 
+	 '(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)))
+    (format t "~a" "  ")
+    (do ((i 0 (1+ i)))
+	((>= i (* +size+ +size+)))
+      (print-grid-separateur-colonne i)
+      (format t "~a" (nth i alphabet))
+      (format t "~a" " ")))
+  (format t "|~%" )
+  (print-grid-separateur-ligne 0)
+ 
+  (do ((i 1 (1+ i)))
+      ((> i (* +size+ +size+)))
+    (print-grid-ligne i)
+    (print-grid-separateur-ligne i)))
+
+(defun print-grid-ligne(h)
+  (format t "~a" h)
+  (format t "~a" " ")
+  (do ((i 0 (1+ i)))
+      ((>= i (* +size+ +size+)))
+    (print-grid-separateur-colonne i)
+    (format t "~a" (aref +grid+ (1- h) i))
+    (format t "~a" " "))
+  (format t "|~%"))
+    
+
+(defun print-grid-separateur-colonne(i)
+  (if (eq (mod i +size+) 0)
+      (format t "~a" "| ")))
+
+(defun print-grid-separateur-ligne(i)
+  (if (eq (mod i +size+) 0)
+      (progn
+	(do ((i 0 (1+ i)))
+	    ((>= i (+ (* +size+ +size+) 4 (1- +size+))))
+	  (format t "- "))
+	(format t " ~%"))))
+
+    
 
 (defun jeu-de-test ()
   (let ((longueur (1- (* +SIZE+ +SIZE+))))
@@ -150,7 +191,8 @@
   T)
 
 (defun jeu-de-test2()
-  (copy-grid *grid-de-test*))
+  (copy-grid *grid-de-test*)
+  (print-grid +grid+))
   
     
   
