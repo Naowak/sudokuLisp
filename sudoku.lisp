@@ -1,16 +1,33 @@
-(defconstant +SIZE+ 3)
+;;taille d'un coté d'un carré
+(defparameter +SIZE+ 3)
 
+;;Convertit A - I en 0 - 9
 (defparameter +tabHash+
   (make-hash-table :test #'eq))
 
+(defun creer-grid (size)
+"Créé une grille de taille (size*size)*(size*size)"
+  (make-array (list (* size size) (* size size))))
+
+;;Grille du sudoku
 (defparameter +grid+
   (creer-grid +SIZE+))
 
+;;Grille qui définit quelles cases sont modifiables
 (defparameter +grid-access+
   (creer-grid +SIZE+))
 
-(defun creer-grid (size)
-  (make-array (list (* size size) (* size size))))
+(defparameter *grid-de-test* 
+  (make-array '(9 9) :initial-contents
+	      '((0 4 0 0 0 5 0 1 6)
+		(0 0 7 0 6 3 5 0 0)
+		(0 6 0 0 0 0 0 0 0)
+		(0 0 0 0 5 0 3 2 9)
+		(0 5 1 0 3 0 8 6 0)
+		(3 2 6 0 4 0 0 0 0)
+		(0 0 0 0 0 0 0 9 0)
+		(0 0 5 6 8 0 7 0 0)
+		(7 8 0 3 0 0 0 5 0))))
 
 (defun initialiser-hash(size)
   (if (> size 26)
@@ -28,6 +45,7 @@
       (initialiser-hash-term (1- size) (butlast list))))
 
 (defun init-all(size)
+"Initialise tout le sudoku"
   (initialiser-hash (* size size))
   (if (not (= size +SIZE+))
       (progn 
@@ -37,17 +55,28 @@
       
 
 (defun set-tile(largeur hauteur valeur)
+  "Attribue à la case de coordonnée (largeur, hauteur) de +grid+ valeur, si valeur n'est pas déjà dans la ligne, colonne ou carré"
   (let ((taille (car (array-dimensions +grid+)))
 	(l (1- (getHash largeur +tabHash+)))
 	(h (1- hauteur)))
-  (if (or (or (< valeur 1) (> valeur taille))
-	   (> h taille)
-	   (> l taille))
-      NIL
-      (setf (aref +grid+ h l) valeur)))) 
+    (if (test-ligne-colonne-carre l h valeur)
+	(if (or (or (< valeur 1) (> valeur taille))
+		(> h taille)
+		(> l taille))
+	    NIL
+	    (setf (aref +grid+ h l) valeur)))))
 
+(defun test-ligne-colonne-carre(largeur hauteur valeur)
+"Lance les trois test"
+  (let ((longueur (1- (* +size+ +size+))))
+    (if (and (test-ligne longueur hauteur valeur)
+	     (test-colonne largeur longueur valeur)
+	     (test-carre largeur hauteur valeur))
+	T
+	NIL)))
 
 (defun test-ligne(n h valeur)
+"Test si valeur n'est pas déjà comprise dans la ligne d'ordonnee h, n est le nombre de case dans une ligne"
   (if (< n 0)
       T
       (if (= (aref +grid+ h n) valeur)
@@ -55,6 +84,7 @@
 	  (test-ligne (1- n) h valeur))))
 
 (defun test-colonne(l n valeur)
+"Test si valeur n'est pas déjà comprise dans la colonne d'abscisse l, n est le nombre de case dans une colonne"
   (if (< n 0)
       T
       (if (= (aref +grid+ n l) valeur)
@@ -63,6 +93,7 @@
 
 
 (defun test-carre(l h valeur)
+"Test si valeur n'est pas déjà comprise dans le carré qui contient la case de coordonnée (l,h)"
   (let ((x (* (floor (/ l +SIZE+)) +SIZE+))
 	(y (* (floor (/ h +SIZE+)) +SIZE+)))
     (test-carre-recX (1- +SIZE+) x y valeur)))
@@ -81,6 +112,29 @@
 	  NIL
 	  (test-carre-recY (1- n) x y valeur))))
 
+(defun copy-grid(grid)
+  (setf +size+ (floor (sqrt (car (array-dimensions grid)))))
+  (init-all +size+)
+  (copy-grid-recX grid 0))
+
+(defun copy-grid-recX(grid l)
+  ;;(declare (ignore grid))
+  (let ((longueur (* +size+ +size+)))
+    (if (< l longueur)
+	(progn
+	  (copy-grid-recY grid l 0)
+	  (copy-grid-recX grid (1+ l))))))
+
+(defun copy-grid-recY(grid l h)
+  (let ((longueur (* +size+ +size+)))
+    (if (< h longueur)
+	(progn
+	  (setf (aref +grid+ l h) (aref grid l h))
+	  (copy-grid-recY grid l (1+ h))))))
+	
+    
+  
+
 (defun jeu-de-test ()
   (let ((longueur (1- (* +SIZE+ +SIZE+))))
     (assert (init-all +SIZE+))
@@ -94,6 +148,10 @@
     (assert (test-carre 8 8 4))
     (assert (not (test-carre 5 5 9))))
   T)
+
+(defun jeu-de-test2()
+  (copy-grid *grid-de-test*))
+  
     
   
   
