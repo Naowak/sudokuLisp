@@ -59,12 +59,15 @@
   (let ((taille (car (array-dimensions +grid+)))
 	(l (1- (getHash largeur +tabHash+)))
 	(h (1- hauteur)))
-    (if (test-ligne-colonne-carre l h valeur)
-	(if (or (or (< valeur 1) (> valeur taille))
-		(> h taille)
-		(> l taille))
-	    NIL
-	    (setf (aref +grid+ h l) valeur)))))
+    (if (eq (aref +grid-access+ h l) 0)
+	 (if (test-ligne-colonne-carre l h valeur)
+	     (if (or (or (< valeur 1) (> valeur taille))
+		     (> h taille)
+		     (> l taille))
+		 NIL
+		 (setf (aref +grid+ h l) valeur))
+	     (print "Impossible de mettre cette valeur dans cette case."))
+	 (print "Cette case n'est pas accessible"))))
 
 (defun test-ligne-colonne-carre(largeur hauteur valeur)
 "Lance les trois test"
@@ -113,12 +116,12 @@
 	  (test-carre-recY (1- n) x y valeur))))
 
 (defun copy-grid(grid)
+  "Copy la grid passé en paramètre dans la grid globale."
   (setf +size+ (floor (sqrt (car (array-dimensions grid)))))
   (init-all +size+)
   (copy-grid-recX grid 0))
 
 (defun copy-grid-recX(grid l)
-  ;;(declare (ignore grid))
   (let ((longueur (* +size+ +size+)))
     (if (< l longueur)
 	(progn
@@ -129,12 +132,15 @@
   (let ((longueur (* +size+ +size+)))
     (if (< h longueur)
 	(progn
-	  (setf (aref +grid+ l h) (aref grid l h))
+	  (if (not (eq (aref grid l h) 0))
+	      (progn
+		(setf (aref +grid+ l h) (aref grid l h))
+		(setf (aref +grid-access+ l h) 1)))
 	  (copy-grid-recY grid l (1+ h))))))
 	
     
-(defun print-grid(grid)
-  (declare (ignore grid))
+(defun print-grid()
+  "Affiche la grille"
   (let ((alphabet 
 	 '(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)))
     (format t "~a" "  ")
@@ -157,7 +163,9 @@
   (do ((i 0 (1+ i)))
       ((>= i (* +size+ +size+)))
     (print-grid-separateur-colonne i)
-    (format t "~a" (aref +grid+ (1- h) i))
+    (if (not (eq (aref +grid+ (1- h) i) 0))
+	(format t "~a" (aref +grid+ (1- h) i))
+	(format t "~a" "."))
     (format t "~a" " "))
   (format t "|~%"))
     
@@ -192,7 +200,7 @@
 
 (defun jeu-de-test2()
   (copy-grid *grid-de-test*)
-  (print-grid +grid+))
+  (print-grid))
   
     
   
