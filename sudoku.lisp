@@ -66,8 +66,8 @@
 		     (> l taille))
 		 NIL
 		 (setf (aref +grid+ h l) valeur))
-	     (print "Impossible de mettre cette valeur dans cette case."))
-	 (print "Cette case n'est pas accessible"))))
+	     (format t "Impossible de mettre cette valeur dans cette case. ~%"))
+	 (format t "Cette case n'est pas accessible. ~%"))))
 
 (defun test-ligne-colonne-carre(largeur hauteur valeur)
 "Lance les trois test"
@@ -210,7 +210,31 @@
     l))
 		  
 	  
+(defun isFinish()
+  (do ((i 0 (+ 1 i)))
+      ((>= i (* +size+ +size+)))
+    (do ((j 0 (+ 1 j)))
+	((>= j (* +size+ +size+)))
+      (if (eq (aref +grid+ i j) 0)
+	  (return-from isFinish) NIL)))
+  T)
+
+
+(defun play()
+  (do ()
+      ((isFinish))
+    (print-grid)
+    (let ((l (input)))
+      (set-tile (car l) (second l) (third l))))
+  (format t "Partie finie ! ~%"))
+
+(defun sudoku(grid)
+  (copy-grid grid)
+  (play))
+      
+      
   
+
 
 (defun jeu-de-test ()
   (let ((longueur (1- (* +SIZE+ +SIZE+))))
