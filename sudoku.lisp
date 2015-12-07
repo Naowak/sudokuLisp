@@ -182,7 +182,35 @@
 	  (format t "- "))
 	(format t " ~%"))))
 
-    
+(defun input()
+  (let ((l (list)))
+    (format t "Colonne - Ligne - Valeur ~%")
+    (let ((col (read))
+	  (lig (read))
+	  (val (read))
+	  (alphabet 
+	   '(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)))
+      (if (find col (subseq alphabet 0 (* +size+ +size+)))
+	  (progn 
+	    (setf l (cons col l))
+	    (if (and (>= lig 0) (<= lig (* +size+ +size+)))
+		(progn
+		  (setf l (append l (list lig)))
+		  (if (and (>= val 0) (<= val 9))
+		      (setf l (append l (list val)))
+		      (progn 
+			(format t "Erreur : Valeur invalide. Veuillez tout recommencer. ~%")
+			(input))))
+		(progn
+		  (format t "Erreur : Ligne invalide. Veuillez tout recommencer. ~%")
+		  (input))))
+	  (progn
+	    (format t "Erreur : Colonne invalide. Veuillez tout recommencer. ~%")
+	    (input))))
+    l))
+		  
+	  
+  
 
 (defun jeu-de-test ()
   (let ((longueur (1- (* +SIZE+ +SIZE+))))
