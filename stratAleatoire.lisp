@@ -90,22 +90,6 @@
 	(setf +grid+ (creer-grid size))
 	(setf +grid-access+ (creer-grid size)))
       T))
-      
-
-(defun set-tile(largeur hauteur valeur)
-  "Attribue à la case de coordonnée (largeur, hauteur) de +grid+ valeur, si valeur n'est pas déjà dans la ligne, colonne ou carré"
-  (let ((taille (car (array-dimensions +grid+)))
-	(l (1- (getHash largeur +tabHash+)))
-	(h (1- hauteur)))
-    (if (eq (aref +grid-access+ h l) 0)
-	 (if (test-ligne-colonne-carre l h valeur)
-	     (if (or (or (< valeur 1) (> valeur taille))
-		     (> h taille)
-		     (> l taille))
-		 NIL
-		 (setf (aref +grid+ h l) valeur))
-	     (format t "Impossible de mettre cette valeur dans cette case. ~%"))
-	 (format t "Cette case n'est pas accessible. ~%"))))
 
 (defun test-ligne-colonne-carre(largeur hauteur valeur)
 "Lance les trois test, return T si on peut mettre valeur dans la case largeur hauteur, NIL sinon."
@@ -271,7 +255,8 @@
 	(if (and (= (aref +grid-coups-epuises+ i (second coord)) 0)
 		 (endp (aref +coups-possibles+ 
 			     i 
-			     (second coord))))
+			     (second coord)))
+		 (= (aref +grid-access+ i (second coord)) 0))
 		 (progn
 		   (setf (aref +grid-coups-epuises+ 
 			       i
@@ -295,7 +280,8 @@
 	(if (and (= (aref +grid-coups-epuises+ (first coord) j) 0)
 		 (endp (aref +coups-possibles+ 
 			     (first coord) 
-			     j)))
+			     j))
+		 (= (aref +grid-access+ (first coord) j) 0))
 		 (progn
 		   (setf (aref +grid-coups-epuises+
 			       (first coord) 
@@ -322,7 +308,8 @@
 	  (if (and (= (aref +grid-coups-epuises+ i j) 0)
 		   (endp (aref +coups-possibles+ 
 			       i 
-			       j)))
+			       j))
+		   (= (aref +grid-access+ i j) 0))
 		   (progn
 		     (setf (aref +grid-coups-epuises+
 				 i
@@ -334,22 +321,12 @@
 				   :test #'equal))
 		     (setf longueur (1- longueur))))))
       
-	  
       (setf (aref +grid+ (first coord) (second coord)) val)
-      (print-grid))))
-      
-		       
-    
-#|  (if (endp (aref +coups-possibles+ 
-			(first coord) 
-			j))
-	    (progn
-	      (setf +cases-coups-possibles+
-		    (remove (list (first coord) j)
-				  +cases-coups-possibles+ 
-			    :test #'equal))
-	      (setf longueur (1- longueur))
-|#
+      (print-grid)))
+  (if (not (isFinish))
+      (format t "La stratégie aléatoire n'a pas trouvé de solution")
+      ))
+
 
 
   
