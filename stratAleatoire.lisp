@@ -29,14 +29,20 @@
 		(0 0 5 6 8 0 7 0 0)
 		(7 8 0 3 0 0 0 5 0))))
 
-
+;;tableau contenant tous les coups possibles pour chaque case
 (defparameter +coups-possibles+
   (make-array (list (* +size+ +size+) (* +size+ +size+))))
 
+;;liste contenant toutes les cases où un coup est possible
 (defparameter +cases-coups-possibles+
   (list))
 
+;;tableau indiquant avec un 1 si la case n'a plus de coups disponibles. 0 sinon.
+(defparameter +grid-coups-epuises+
+  (make-array (list (* +size+ +size+) (* +size+ +size+))))
+
 (defun init-coups-possibles ()
+"Initialise +coup-possibles+"
   (do ((i 0 (1+ i)))
       ((> i (1- (* +size+ +size+))))
     (do ((j 0 (1+ j)))
@@ -51,6 +57,7 @@
 			      (list k)))))))))
 
 (defun init-cases-coups-possibles ()
+"Initialise +cases-coups-possibles+"
   (do ((i 0 (1+ i)))
       ((> i (1- (* +size+ +size+))))
     (do ((j 0 (1+ j)))
@@ -214,6 +221,7 @@
 	(format t " ~%"))))
 
 (defun isFinish()
+"retourne T si fini, NIL sinon"
   (do ((i 0 (+ 1 i)))
       ((>= i (* +size+ +size+)))
     (do ((j 0 (+ 1 j)))
@@ -226,17 +234,20 @@
 ;;; stratégie aléatoire
 
 (defun init-standalone (grid)
+"Initialise la stratégie"
   (copy-grid grid)
   (init-coups-possibles)
   (init-cases-coups-possibles))  
 
 
 (defun main-standalone ()
+"Lance la stratégie"
   (let ((longueur (length +cases-coups-possibles+))
 	(coord NIL)
 	(val NIL))
+
     (do ()
-	((= longueur 0))
+	((<= longueur 0)) ;; tant qu'il y a encore des cases où l'on peut effectué une action
       (setf coord 
 	    (nth (random longueur) +cases-coups-possibles+))
       (setf val 
@@ -246,15 +257,33 @@
 		  (aref +coups-possibles+ 
 		       (first coord) 
 		       (second coord))))
-      (do ((i 0 (1+ i)))
+      
+
+      ;;On supprime les coups possibles val dans la ligne
+      (do ((i 0 (1+ i))) 
 	  ((>= i (* +size+ +size+)))
 	(setf (aref +coups-possibles+
 		    i
 		    (second coord))
 	      (remove val (aref +coups-possibles+
 				i
-				(second coord)) :test #'equal)))
-
+				(second coord)) :test #'equal))
+	(if (and (= (aref +grid-coups-epuises+ i (second coord)) 0)
+		 (endp (aref +coups-possibles+ 
+			     i 
+			     (second coord))))
+		 (progn
+		   (setf (aref +grid-coups-epuises+ 
+			       i
+			       (second coord)) 
+			 1)
+		   (setf +cases-coups-possibles+
+			 (remove (list i (second coord))
+				 +cases-coups-possibles+ 
+				 :test #'equal))
+		   (setf longueur (1- longueur)))))
+      
+      ;;On supprime les coups possibles val dans la colonne
       (do ((j 0 (1+ j)))
 	  ((>= j (* +size+ +size+)))
 	(setf (aref +coups-possibles+
@@ -263,16 +292,22 @@
 	    (remove val (aref +coups-possibles+
 			      (first coord)
 			      j) :test #'equal))
-	(if (endp (aref +coups-possibles+ 
-			(first coord) 
-			j))
-	    (progn
-	      (setf +cases-coups-possibles+
-		    (remove (list (first coord) j)
-				  +cases-coups-possibles+ 
-			    :test #'equal))
-	      (setf longueur (1- longueur)))))
+	(if (and (= (aref +grid-coups-epuises+ (first coord) j) 0)
+		 (endp (aref +coups-possibles+ 
+			     (first coord) 
+			     j)))
+		 (progn
+		   (setf (aref +grid-coups-epuises+
+			       (first coord) 
+			       j) 
+			 1)
+		   (setf +cases-coups-possibles+
+			 (remove (list (first coord) j)
+				 +cases-coups-possibles+ 
+				 :test #'equal))
+		   (setf longueur (1- longueur)))))
 
+      ;;On supprime les coups possible val dans le carré
       (do ((i (- (first coord) 
 		 (mod (first coord) +size+)) 
 	      (1+ i)))
@@ -284,16 +319,20 @@
 	  (setf (aref +coups-possibles+ i j)
 	    (remove val (aref +coups-possibles+ i j) 
 		    :test #'equal))
-	  (if (endp (aref +coups-possibles+ 
-		      i 
-		      j))
-	  (progn
-	    (setf +cases-coups-possibles+
-		  (remove (list i j) +cases-coups-possibles+ 
-			  :test #'equal))
-	    (setf longueur (1- longueur))))))
-
-      
+	  (if (and (= (aref +grid-coups-epuises+ i j) 0)
+		   (endp (aref +coups-possibles+ 
+			       i 
+			       j)))
+		   (progn
+		     (setf (aref +grid-coups-epuises+
+				 i
+				 j) 
+			   1)
+		     (setf +cases-coups-possibles+
+			   (remove (list i j)
+				   +cases-coups-possibles+ 
+				   :test #'equal))
+		     (setf longueur (1- longueur))))))
       
 	  
       (setf (aref +grid+ (first coord) (second coord)) val)
@@ -301,7 +340,17 @@
       
 		       
     
-  
+#|  (if (endp (aref +coups-possibles+ 
+			(first coord) 
+			j))
+	    (progn
+	      (setf +cases-coups-possibles+
+		    (remove (list (first coord) j)
+				  +cases-coups-possibles+ 
+			    :test #'equal))
+	      (setf longueur (1- longueur))
+|#
+
 
   
   
