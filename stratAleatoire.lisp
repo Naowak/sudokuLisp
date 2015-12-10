@@ -185,8 +185,7 @@
 "Lance la stratégie"
   (let ((longueur (length +CASES-COUPS-POSSIBLES+))
 	(coord NIL)
-	(val NIL)
-	(alphabet '(A B C D E F G H I)))
+	(val NIL))
 
     (if (<= longueur 0)
 	NIL
@@ -280,10 +279,10 @@
 				  :test #'equal))
 		    (setf longueur (1- longueur))))))
 	  
-	  (values (nth (second coord) alphabet) (first coord)  val)))))
+	  (values (first coord) (second coord)  val)))))
 
 (defun test-main()
-  (let ((ret (main-standalone)))
+  (let ((ret (multiple-value-bind (x y val) (main-standalone) (list x y val))))
     (do ()
 	((eq ret NIL))
       (setf (aref +GRID+ (first ret) (second ret))
