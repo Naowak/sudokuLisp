@@ -1,22 +1,30 @@
 ;;taille d'un coté d'un carré
 (defparameter +SIZE+ 3)
 
+;;taille d'un coté de la grille
+(defparameter +LONG-SIZE+ 9)
+
 ;;Convertit A - I en 0 - 9
-(defparameter +tabHash+
+(defparameter +TAB-HASH+
   (make-hash-table :test #'eq))
 
-(defun creer-grid (size)
+;;Créer l'alphabet
+(defparameter +ALPHABET+
+  '(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z))
+
+(defun creer-grid ()
 "Créé une grille de taille (size*size)*(size*size)"
-  (make-array (list (* size size) (* size size))))
+  (make-array (list +LONG-SIZE+ +LONG-SIZE+)))
 
 ;;Grille du sudoku
-(defparameter +grid+
-  (creer-grid +SIZE+))
+(defparameter +GRID+
+  (creer-grid))
 
 ;;Grille qui définit quelles cases sont modifiables
-(defparameter +grid-access+
-  (creer-grid +SIZE+))
+(defparameter +GRID-ACCESS+
+  (creer-grid))
 
+;;grille de sudoku utilisée pour les tests.
 (defparameter *grid-de-test* 
   (make-array '(9 9) :initial-contents
 	      '((0 4 0 0 0 5 0 1 6)
@@ -30,70 +38,70 @@
 		(7 8 0 3 0 0 0 5 0))))
 
 ;;tableau contenant tous les coups possibles pour chaque case
-(defparameter +coups-possibles+
-  (make-array (list (* +size+ +size+) (* +size+ +size+))))
+(defparameter +COUPS-POSSIBLES+
+  (make-array (list +LONG-SIZE+ +LONG-SIZE+)))
 
 ;;liste contenant toutes les cases où un coup est possible
-(defparameter +cases-coups-possibles+
+(defparameter +CASES-COUPS-POSSIBLES+
   (list))
 
 ;;tableau indiquant avec un 1 si la case n'a plus de coups disponibles. 0 sinon.
-(defparameter +grid-coups-epuises+
-  (make-array (list (* +size+ +size+) (* +size+ +size+))))
+(defparameter +GRID-COUPS-EPUISES+
+  (make-array (list +LONG-SIZE+ +LONG-SIZE+)))
 
 (defun init-coups-possibles ()
 "Initialise +coup-possibles+"
   (do ((i 0 (1+ i)))
-      ((> i (1- (* +size+ +size+))))
+      ((> i (1- +LONG-SIZE+)))
     (do ((j 0 (1+ j)))
-	((> j (1- (* +size+ +size+))))
-      (setf (aref +coups-possibles+ i j) (list))
-      (if (= (aref +grid-access+ i j) 0)
+	((> j (1- +LONG-SIZE+)))
+      (setf (aref +COUPS-POSSIBLES+ i j) (list))
+      (if (= (aref +GRID-ACCESS+ i j) 0)
 	  (do ((k 1 (1+ k)))
 	      ((> k 9))
 	    (if (test-ligne-colonne-carre j i k)
-		(setf (aref +coups-possibles+ i j)
-		      (append (aref +coups-possibles+ i j) 
+		(setf (aref +COUPS-POSSIBLES+ i j)
+		      (append (aref +COUPS-POSSIBLES+ i j) 
 			      (list k)))))))))
 
 (defun init-cases-coups-possibles ()
-"Initialise +cases-coups-possibles+"
+"Initialise +CASES-COUPS-POSSIBLES+"
   (do ((i 0 (1+ i)))
-      ((> i (1- (* +size+ +size+))))
+      ((> i (1- +LONG-SIZE+)))
     (do ((j 0 (1+ j)))
-	((> j (1- (* +size+ +size+))))
-      (if (not (endp (aref +coups-possibles+ i j)))
-	  (setf +cases-coups-possibles+
-		(append +cases-coups-possibles+ 
+	((> j (1- +LONG-SIZE+)))
+      (if (not (endp (aref +COUPS-POSSIBLES+ i j)))
+	  (setf +CASES-COUPS-POSSIBLES+
+		(append +CASES-COUPS-POSSIBLES+ 
 			(list (list i j))))))))
 
-(defun initialiser-hash(size)
-  (if (> size 26)
+(defun initialiser-hash()
+"Initialise la table de hachage."
+  (if (> +LONG-SIZE+ 26)
       NIL
       (initialiser-hash-term 
-       size 
-       (subseq 
-	'(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) 
-	0 size))))
+       +LONG-SIZE+ 
+       (subseq +ALPHABET+ 0 +LONG-SIZE+))))
 
 (defun initialiser-hash-term(size list)
-  (setf (gethash (car (last list)) +tabHash+) size)
+"Utilisée dans initialiser-hash."
+  (setf (gethash (car (last list)) +TAB-HASH+) size)
   (if (= 1 size)
       T
       (initialiser-hash-term (1- size) (butlast list))))
 
 (defun init-all(size)
 "Initialise tout le sudoku"
-  (initialiser-hash (* size size))
+  (initialiser-hash)
   (if (not (= size +SIZE+))
       (progn 
-	(setf +grid+ (creer-grid size))
-	(setf +grid-access+ (creer-grid size)))
+	(setf +GRID+ (creer-grid))
+	(setf +GRID-ACCESS+ (creer-grid)))
       T))
-
+      
 (defun test-ligne-colonne-carre(largeur hauteur valeur)
-"Lance les trois test, return T si on peut mettre valeur dans la case largeur hauteur, NIL sinon."
-  (let ((longueur (1- (* +size+ +size+))))
+"Lance les trois test"
+  (let ((longueur (1- +LONG-SIZE+)))
     (if (and (test-ligne longueur hauteur valeur)
 	     (test-colonne largeur longueur valeur)
 	     (test-carre largeur hauteur valeur))
@@ -104,7 +112,7 @@
 "Test si valeur n'est pas déjà comprise dans la ligne d'ordonnee h, n est le nombre de case dans une ligne"
   (if (< n 0)
       T
-      (if (= (aref +grid+ h n) valeur)
+      (if (= (aref +GRID+ h n) valeur)
 	  NIL
 	  (test-ligne (1- n) h valeur))))
 
@@ -112,7 +120,7 @@
 "Test si valeur n'est pas déjà comprise dans la colonne d'abscisse l, n est le nombre de case dans une colonne"
   (if (< n 0)
       T
-      (if (= (aref +grid+ n l) valeur)
+      (if (= (aref +GRID+ n l) valeur)
 	  NIL
 	  (test-colonne l (1- n) valeur))))
 
@@ -124,6 +132,7 @@
     (test-carre-recX (1- +SIZE+) x y valeur)))
 
 (defun test-carre-recX(n x y valeur)
+"Utilisée dans test-carre, pour parcourir la ligne."
   (if (< n 0)
       T
       (if (test-carre-recY(1- +SIZE+) (+ n x) y valeur)
@@ -131,34 +140,35 @@
 	NIL)))
 
 (defun test-carre-recY(n x y valeur)
+"Utilisée dans test-carré-recX, pour parcourir la colonne."
   (if (< n 0)
       T
-      (if (= (aref +grid+ (+ y n) x) valeur)
+      (if (= (aref +GRID+ (+ y n) x) valeur)
 	  NIL
 	  (test-carre-recY (1- n) x y valeur))))
 
 (defun copy-grid(grid)
   "Copy la grid passé en paramètre dans la grid globale."
-  (setf +size+ (floor (sqrt (car (array-dimensions grid)))))
-  (init-all +size+)
+  (setf +SIZE+ (floor (sqrt (car (array-dimensions grid)))))
+  (init-all +SIZE+)
   (copy-grid-recX grid 0))
 
 (defun copy-grid-recX(grid l)
-  (let ((longueur (* +size+ +size+)))
-    (if (< l longueur)
-	(progn
-	  (copy-grid-recY grid l 0)
-	  (copy-grid-recX grid (1+ l))))))
+"Utilisée dans copy-grid, pour parcourir la ligne."
+  (if (< l +LONG-SIZE+)
+      (progn
+	(copy-grid-recY grid l 0)
+	(copy-grid-recX grid (1+ l)))))
 
 (defun copy-grid-recY(grid l h)
-  (let ((longueur (* +size+ +size+)))
-    (if (< h longueur)
+"Utilisée dans copy-grid-recX, pour parcourir la colonne."
+    (if (< h +LONG-SIZE+)
 	(progn
 	  (if (not (eq (aref grid l h) 0))
 	      (progn
-		(setf (aref +grid+ l h) (aref grid l h))
-		(setf (aref +grid-access+ l h) 1)))
-	  (copy-grid-recY grid l (1+ h))))))
+		(setf (aref +GRID+ l h) (aref grid l h))
+		(setf (aref +GRID-ACCESS+ l h) 1)))
+	  (copy-grid-recY grid l (1+ h)))))
 	
 
 
@@ -173,7 +183,7 @@
 
 (defun main-standalone ()
 "Lance la stratégie"
-  (let ((longueur (length +cases-coups-possibles+))
+  (let ((longueur (length +CASES-COUPS-POSSIBLES+))
 	(coord NIL)
 	(val NIL)
 	(alphabet '(A B C D E F G H I)))
@@ -182,91 +192,91 @@
 	NIL
 	(progn
 	  (setf coord 
-		(nth (random longueur) +cases-coups-possibles+))
+		(nth (random longueur) +CASES-COUPS-POSSIBLES+))
 	  (setf val 
-		(nth  (random (length (aref +coups-possibles+
+		(nth  (random (length (aref +COUPS-POSSIBLES+
 					    (first coord)
 					    (second coord))))
-		      (aref +coups-possibles+ 
+		      (aref +COUPS-POSSIBLES+ 
 			    (first coord) 
 			    (second coord))))
 	  
 
 	  ;;On supprime les coups possibles val dans la ligne
 	  (do ((i 0 (1+ i))) 
-	      ((>= i (* +size+ +size+)))
-	    (setf (aref +coups-possibles+
+	      ((>= i +LONG-SIZE+))
+	    (setf (aref +COUPS-POSSIBLES+
 			i
 			(second coord))
-		  (remove val (aref +coups-possibles+
+		  (remove val (aref +COUPS-POSSIBLES+
 				    i
 				    (second coord)) :test #'equal))
-	    (if (and (= (aref +grid-coups-epuises+ i (second coord)) 0)
-		     (endp (aref +coups-possibles+ 
+	    (if (and (= (aref +GRID-COUPS-EPUISES+ i (second coord)) 0)
+		     (endp (aref +COUPS-POSSIBLES+ 
 				 i 
 				 (second coord)))
-		     (= (aref +grid-access+ i (second coord)) 0))
+		     (= (aref +GRID-ACCESS+ i (second coord)) 0))
 		(progn
-		  (setf (aref +grid-coups-epuises+ 
+		  (setf (aref +GRID-COUPS-EPUISES+ 
 			      i
 			      (second coord)) 
 			1)
-		  (setf +cases-coups-possibles+
+		  (setf +CASES-COUPS-POSSIBLES+
 			(remove (list i (second coord))
-				+cases-coups-possibles+ 
+				+CASES-COUPS-POSSIBLES+ 
 				:test #'equal))
 		  (setf longueur (1- longueur)))))
 	  
 	  ;;On supprime les coups possibles val dans la colonne
 	  (do ((j 0 (1+ j)))
-	      ((>= j (* +size+ +size+)))
-	    (setf (aref +coups-possibles+
+	      ((>= j +LONG-SIZE+))
+	    (setf (aref +COUPS-POSSIBLES+
 			(first coord)
 			j)
-		  (remove val (aref +coups-possibles+
+		  (remove val (aref +COUPS-POSSIBLES+
 				    (first coord)
 				    j) :test #'equal))
-	    (if (and (= (aref +grid-coups-epuises+ (first coord) j) 0)
-		     (endp (aref +coups-possibles+ 
+	    (if (and (= (aref +GRID-COUPS-EPUISES+ (first coord) j) 0)
+		     (endp (aref +COUPS-POSSIBLES+ 
 				 (first coord) 
 				 j))
-		     (= (aref +grid-access+ (first coord) j) 0))
+		     (= (aref +GRID-ACCESS+ (first coord) j) 0))
 		(progn
-		  (setf (aref +grid-coups-epuises+
+		  (setf (aref +GRID-COUPS-EPUISES+
 			      (first coord) 
 			      j) 
 			1)
-		  (setf +cases-coups-possibles+
+		  (setf +CASES-COUPS-POSSIBLES+
 			(remove (list (first coord) j)
-				+cases-coups-possibles+ 
+				+CASES-COUPS-POSSIBLES+ 
 				:test #'equal))
 		  (setf longueur (1- longueur)))))
 
 	  ;;On supprime les coups possible val dans le carré
 	  (do ((i (- (first coord) 
-		     (mod (first coord) +size+)) 
+		     (mod (first coord) +SIZE+)) 
 		  (1+ i)))
-	      ((>= i (+ (mod (first coord) +size+) +size+)))
+	      ((>= i (+ (mod (first coord) +SIZE+) +SIZE+)))
 	    (do ((j (- (second coord) 
-		       (mod (second coord) +size+)) 
+		       (mod (second coord) +SIZE+)) 
 		    (1+ j)))
-		((>= j (+ (mod (second coord) +size+) +size+)))
-	      (setf (aref +coups-possibles+ i j)
-		    (remove val (aref +coups-possibles+ i j) 
+		((>= j (+ (mod (second coord) +SIZE+) +SIZE+)))
+	      (setf (aref +COUPS-POSSIBLES+ i j)
+		    (remove val (aref +COUPS-POSSIBLES+ i j) 
 			    :test #'equal))
-	      (if (and (= (aref +grid-coups-epuises+ i j) 0)
-		       (endp (aref +coups-possibles+ 
+	      (if (and (= (aref +GRID-COUPS-EPUISES+ i j) 0)
+		       (endp (aref +COUPS-POSSIBLES+ 
 				   i 
 				   j))
-		       (= (aref +grid-access+ i j) 0))
+		       (= (aref +GRID-ACCESS+ i j) 0))
 		  (progn
-		    (setf (aref +grid-coups-epuises+
+		    (setf (aref +GRID-COUPS-EPUISES+
 				i
 				j) 
 			  1)
-		    (setf +cases-coups-possibles+
+		    (setf +CASES-COUPS-POSSIBLES+
 			  (remove (list i j)
-				  +cases-coups-possibles+ 
+				  +CASES-COUPS-POSSIBLES+ 
 				  :test #'equal))
 		    (setf longueur (1- longueur))))))
 	  
@@ -276,7 +286,7 @@
   (let ((ret (main-standalone)))
     (do ()
 	((eq ret NIL))
-      (setf (aref +grid+ (first ret) (second ret))
+      (setf (aref +GRID+ (first ret) (second ret))
 	    (third ret))
       (setf ret (main-standalone))))
   (print "fin"))
