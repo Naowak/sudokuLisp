@@ -270,7 +270,7 @@
 				  :test #'equal))
 		    (setf longueur (1- longueur))))))
 	  
-	  (list (nth (second coord) alphabet) (first coord)  val)))))
+	  (values (second coord) (first coord)  val)))))
 
 (defun test-main()
   (let ((ret (main-standalone)))
