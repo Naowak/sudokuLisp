@@ -279,7 +279,7 @@
 				  :test #'equal))
 		    (setf longueur (1- longueur))))))
 	  
-	  (values (first coord) (second coord)  val)))))
+	  (values (list (first coord) (second coord))  val)))))
 
 (defun test-main()
   (let ((ret (multiple-value-bind (x y val) (main-standalone) (list x y val))))
