@@ -160,59 +160,6 @@
 		(setf (aref +grid-access+ l h) 1)))
 	  (copy-grid-recY grid l (1+ h))))))
 	
-    
-(defun print-grid()
-  "Affiche la grille"
-  (let ((alphabet 
-	 '(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)))
-    (format t "~a" "  ")
-    (do ((i 0 (1+ i)))
-	((>= i (* +size+ +size+)))
-      (print-grid-separateur-colonne i)
-      (format t "~a" (nth i alphabet))
-      (format t "~a" " ")))
-  (format t "|~%" )
-  (print-grid-separateur-ligne 0)
- 
-  (do ((i 1 (1+ i)))
-      ((> i (* +size+ +size+)))
-    (print-grid-ligne i)
-    (print-grid-separateur-ligne i)))
-
-(defun print-grid-ligne(h)
-  (format t "~a" h)
-  (format t "~a" " ")
-  (do ((i 0 (1+ i)))
-      ((>= i (* +size+ +size+)))
-    (print-grid-separateur-colonne i)
-    (if (not (eq (aref +grid+ (1- h) i) 0))
-	(format t "~a" (aref +grid+ (1- h) i))
-	(format t "~a" "."))
-    (format t "~a" " "))
-  (format t "|~%"))
-    
-
-(defun print-grid-separateur-colonne(i)
-  (if (eq (mod i +size+) 0)
-      (format t "~a" "| ")))
-
-(defun print-grid-separateur-ligne(i)
-  (if (eq (mod i +size+) 0)
-      (progn
-	(do ((i 0 (1+ i)))
-	    ((>= i (+ (* +size+ +size+) 4 (1- +size+))))
-	  (format t "- "))
-	(format t " ~%"))))
-
-(defun isFinish()
-"retourne T si fini, NIL sinon"
-  (do ((i 0 (+ 1 i)))
-      ((>= i (* +size+ +size+)))
-    (do ((j 0 (+ 1 j)))
-	((>= j (* +size+ +size+)))
-      (if (eq (aref +grid+ i j) 0)
-	  (return-from isFinish) NIL)))
-  T)
 
 
 ;;; stratégie aléatoire
@@ -322,8 +269,16 @@
 				  :test #'equal))
 		    (setf longueur (1- longueur))))))
 	  
-	  (print-grid)
 	  (list (first coord) (second coord) val)))))
+
+(defun test-main()
+  (let ((ret (main-standalone)))
+    (do ()
+	((eq ret NIL))
+      (setf (aref +grid+ (first ret) (second ret))
+	    (third ret))
+      (setf ret (main-standalone))))
+  (print "fin"))
 
 
 
