@@ -37,6 +37,32 @@
 		(0 0 5 6 8 0 7 0 0)
 		(7 8 0 3 0 0 0 5 0))))
 
+
+(defparameter *grid-1*
+  (make-array '(9 9) :initial-contents
+	      '((0 1 9 0 2 0 0 0 0)
+		(7 0 5 6 0 0 9 3 2)
+		(0 0 2 0 0 8 0 7 1)
+		(0 0 7 2 0 0 0 0 4)
+		(0 3 8 1 4 0 0 2 7)
+		(2 4 1 7 0 0 3 8 9)
+		(0 5 6 0 9 2 0 0 3)
+		(0 0 4 0 5 1 2 0 8)
+		(0 0 3 8 0 6 4 0 0))))
+
+(defparameter *grid-2*
+  (make-array '(9 9) :initial-contents
+	      '((0 2 5 0 3 8 0 9 0)
+		(0 0 0 0 7 0 1 4 8)
+		(0 0 8 0 6 0 5 3 0)
+		(2 1 3 6 0 5 8 7 9)
+		(6 0 0 2 0 7 3 1 4)
+		(7 0 4 3 1 9 2 0 0)
+		(9 3 7 8 0 1 0 6 0)
+		(8 4 0 7 0 0 9 2 3)
+		(5 6 2 4 9 0 7 8 1))))
+
+
 ;;tableau contenant tous les coups possibles pour chaque case
 (defparameter +COUPS-POSSIBLES+
   (make-array (list +LONG-SIZE+ +LONG-SIZE+)))
@@ -279,16 +305,27 @@
 				  :test #'equal))
 		    (setf longueur (1- longueur))))))
 	  
-	  (values (first coord) (second coord) val)))))
+	  (values (second coord) (first coord) val)))))
 
 (defun test-main()
-  (let ((ret (multiple-value-bind (x y val) (main-standalone) (list x y val))))
+  (let ((ret (main-standalone)))
+    (if (not (eq ret NIL))
+	(setf ret (multiple-value-bind 
+			(x y val) 
+		      (main-standalone)
+		    (list x y val))))
     (do ()
 	((eq ret NIL))
       (setf (aref +GRID+ (first ret) (second ret))
 	    (third ret))
-      (setf ret (main-standalone))))
+      (setf ret (main-standalone))
+      (if (not (eq ret NIL))
+	  (setf ret (multiple-value-bind 
+			  (x y val) 
+			(main-standalone)
+		      (list x y val))))))
   (print "fin"))
+      
 
 
 
