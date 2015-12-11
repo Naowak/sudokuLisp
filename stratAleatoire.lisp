@@ -71,10 +71,6 @@
 (defparameter +CASES-COUPS-POSSIBLES+
   (list))
 
-;;tableau indiquant avec un 1 si la case n'a plus de coups disponibles. 0 sinon.
-(defparameter +GRID-COUPS-EPUISES+
-  (make-array (list +LONG-SIZE+ +LONG-SIZE+)))
-
 (defun init-coups-possibles ()
 "Initialise +coup-possibles+"
   (do ((i 0 (1+ i)))
@@ -236,21 +232,14 @@
 		  (remove val (aref +COUPS-POSSIBLES+
 				    i
 				    (second coord)) :test #'equal))
-	    (if (and (= (aref +GRID-COUPS-EPUISES+ i (second coord)) 0)
-		     (endp (aref +COUPS-POSSIBLES+ 
+	    (if (and (endp (aref +COUPS-POSSIBLES+ 
 				 i 
 				 (second coord)))
 		     (= (aref +GRID-ACCESS+ i (second coord)) 0))
-		(progn
-		  (setf (aref +GRID-COUPS-EPUISES+ 
-			      i
-			      (second coord)) 
-			1)
-		  (setf +CASES-COUPS-POSSIBLES+
-			(remove (list i (second coord))
-				+CASES-COUPS-POSSIBLES+ 
-				:test #'equal))
-		  (setf longueur (1- longueur)))))
+		(setf +CASES-COUPS-POSSIBLES+
+		      (remove (list i (second coord))
+			      +CASES-COUPS-POSSIBLES+ 
+			      :test #'equal))))
 	  
 	  ;;On supprime les coups possibles val dans la colonne
 	  (do ((j 0 (1+ j)))
@@ -261,21 +250,14 @@
 		  (remove val (aref +COUPS-POSSIBLES+
 				    (first coord)
 				    j) :test #'equal))
-	    (if (and (= (aref +GRID-COUPS-EPUISES+ (first coord) j) 0)
-		     (endp (aref +COUPS-POSSIBLES+ 
+	    (if (and (endp (aref +COUPS-POSSIBLES+ 
 				 (first coord) 
 				 j))
 		     (= (aref +GRID-ACCESS+ (first coord) j) 0))
-		(progn
-		  (setf (aref +GRID-COUPS-EPUISES+
-			      (first coord) 
-			      j) 
-			1)
-		  (setf +CASES-COUPS-POSSIBLES+
-			(remove (list (first coord) j)
-				+CASES-COUPS-POSSIBLES+ 
-				:test #'equal))
-		  (setf longueur (1- longueur)))))
+		(setf +CASES-COUPS-POSSIBLES+
+		      (remove (list (first coord) j)
+			      +CASES-COUPS-POSSIBLES+ 
+			      :test #'equal))))
 
 	  ;;On supprime les coups possible val dans le carré
 	  (do ((i (- (first coord) 
@@ -289,41 +271,26 @@
 	      (setf (aref +COUPS-POSSIBLES+ i j)
 		    (remove val (aref +COUPS-POSSIBLES+ i j) 
 			    :test #'equal))
-	      (if (and (= (aref +GRID-COUPS-EPUISES+ i j) 0)
-		       (endp (aref +COUPS-POSSIBLES+ 
+	      (if (and (endp (aref +COUPS-POSSIBLES+ 
 				   i 
 				   j))
 		       (= (aref +GRID-ACCESS+ i j) 0))
-		  (progn
-		    (setf (aref +GRID-COUPS-EPUISES+
-				i
-				j) 
-			  1)
-		    (setf +CASES-COUPS-POSSIBLES+
-			  (remove (list i j)
-				  +CASES-COUPS-POSSIBLES+ 
-				  :test #'equal))
-		    (setf longueur (1- longueur))))))
+		  (setf +CASES-COUPS-POSSIBLES+
+			(remove (list i j)
+				+CASES-COUPS-POSSIBLES+ 
+				:test #'equal)))))
 	  
 	  (values (first coord) (second coord) val)))))
 
 (defun test-main()
-  (let ((ret (main-standalone)))
-    (if (not (eq ret NIL))
-	(setf ret (multiple-value-bind 
-			(x y val) 
-		      (main-standalone)
-		    (list x y val))))
+  (let ((ret (multiple-value-bind (x y val) (main-standalone) (list x y val))))
     (do ()
-	((eq ret NIL))
+	((eq (first ret) NIL))
       (setf (aref +GRID+ (first ret) (second ret))
 	    (third ret))
-      (setf ret (main-standalone))
-      (if (not (eq ret NIL))
-	  (setf ret (multiple-value-bind 
-			  (x y val) 
-			(main-standalone)
-		      (list x y val))))))
+      (setf ret (multiple-value-bind (x y val) 
+		    (main-standalone) 
+		  (list x y val)))))
   (print "fin"))
       
 
