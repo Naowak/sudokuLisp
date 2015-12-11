@@ -216,36 +216,75 @@
     (if (<= longueur 0)
 	NIL
 	(progn
-	  (do ()
-	      ((not (equal val NIL)))
-	    (do ((i 0 (1+ i))) ;;si il existe une cases avec une seule possibilité
-		((>= i longueur))
-	      (let ((x (first (nth i +CASES-COUPS-POSSIBLES+)))
-		    (y (second (nth i +CASES-COUPS-POSSIBLES+))))
-		(if (eq (length (aref +COUPS-POSSIBLES+ x y)) 1)
-		    (progn
-		      (setf coord (list x y))
-		      (setf val (first (aref +COUPS-POSSIBLES+ x y)))))))
-	    (if (not (equal val NIL)) ;;si il existe une case dans ligne étant la seule à pouvoir contenir une valeur
-		(do ((j 0 (1+ j))) ;;parcours ordonnée
+	  (do ((i 0 (1+ i))) ;;si il existe une cases avec une seule possibilité
+	      ((>= i longueur))
+	    (let ((x (first (nth i +CASES-COUPS-POSSIBLES+)))
+		  (y (second (nth i +CASES-COUPS-POSSIBLES+))))
+	      (if (eq (length (aref +COUPS-POSSIBLES+ x y)) 1)
+		  (progn
+		    (setf coord (list x y))
+		    (setf val (first (aref +COUPS-POSSIBLES+ x y)))))))
+
+	  (if (not (equal val NIL)) ;;si il existe une case dans ligne étant la seule à pouvoir contenir une valeur
+	      (do ((j 0 (1+ j))) ;;parcours ordonnée
+		  ((>= j +LONG-SIZE+)
+		   (not (equal val NIL)))
+		(do ((i 0 (1+ i))) ;;parcours abscisse
+		    ((>= i +LONG-SIZE+)
+		     (not (equal val NIL)))
+		  (let ((diff (aref +COUPS-POSSIBLES+ i j))) ;;2eme parcours abscisse
+		    (do ((k (1+ i) (1+ k))) ;;on supprime si 2ème occurence ailleurs
+			((>= k +LONG-SIZE+)
+			 (not (equal val NIL)))
+		      (setf diff (set-difference diff (aref +COUPS-POSSIBLES+ k j))))
+		    (if (not (endp diff))
+		      (progn
+			(setf coord (list i j))
+			(setf val (first diff))))))))
+
+	  (if (not (equal val NIL)) ;;si il existe une case dans colonne étant la seule à pouvoir contenir une valeur
+	      (do ((j 0 (1+ j))) ;;parcours abscisse
+		  ((>= j +LONG-SIZE+)
+		   (not (equal val NIL)))
+		(do ((i 0 (1+ i))) ;;parcours ordonnée
+		    ((>= i +LONG-SIZE+)
+		     (not (equal val NIL)))
+		  (let ((diff (aref +COUPS-POSSIBLES+ j i))) ;;2eme parcours ordonnée
+		    (do ((k (1+ i) (1+ k))) ;;on supprime si 2ème occurence ailleurs
+			((>= k +LONG-SIZE+))
+		      (setf diff (set-difference diff (aref +COUPS-POSSIBLES+ j k))))
+		    (if (not (endp diff))
+		      (progn
+			(setf coord (list j i))
+			(setf val (first diff))))))))
+
+	  (if (not (equal val NIL));;s'il existe une case dans le carré étant la seule à pouvoir contenir une valeur
+	      (do ((i 0 (1+ i)));;parcours abscisse
+		  ((>= i +LONG-SIZE+)
+		   (not (equal val NIL)))
+		(do ((j 0 (1+ j)));;parcours ordonnee
 		    ((>= j +LONG-SIZE+)
 		     (not (equal val NIL)))
-		  (do ((i 0) (1+ i)) ;;parcours abscisse
-		      ((>= i +LONG-SIZE+)
-		       (not (equal val NIL)))
-		    (let ((l (aref +COUPS-POSSIBLES+ i j))) ;;2eme parcours abscisse
-		      (do ((k (1+ i) (1+ k)))
-			  ((>= k +LONG-SIZE+)
-			   (not (equal val NIL)))
-			(let ((diff (set-difference l) (aref +COUPs-POSSIBLES+ k j)))
-			  (if (not (endp diff))
-			      (progn
-				(setf coord (list i j))
-				(setf val (first diff))))))))))
-	    (
-			      
-			    
-		      
+		  (let* ((diff (aref +COUPS-POSSIBLES+ i j))
+			 (res-de-I (multiple-value-bind (q r) (floor i +SIZE+) (list q r)))
+			 (res-de-J (multiple-value-bind (q r) (floor j +SIZE+) (list q r)))
+			 (quotient-de-I (first res-de-I))
+			 (quotient-de-J (first res-de-J))
+			 (reste-de-I (second res-de-I))
+			 (reste-de-J (second res-de-J)))
+		    (do ((k reste-de-I (1+ k)))
+			((>= k +SIZE+))
+		      (do ((l 0 (1+ l)))
+			  ((>= l +SIZE+))
+			(if (not (and (eq k reste-de-I) (<= l reste-de-J)))
+			    (setf diff (set-difference diff (aref +COUPS-POSSIBLES+ 
+								  (+ quotient-de-I k) 
+								  (+ quotient-de-J l)))))))
+		    (if (not (endp diff))
+			(progn 
+			  (setf coord (list i j))
+			  (setf val (first diff))))))))
+			
 
 	  ;;On supprime les coups possibles val dans la ligne
 	  (do ((i 0 (1+ i))) 
@@ -324,18 +363,21 @@
 				  +CASES-COUPS-POSSIBLES+ 
 				  :test #'equal))
 		    (setf longueur (1- longueur))))))
-	  
+	  (print (first coord))
+	  (print (second coord))
+	  (print val)
+	  (print "next")
 	  (values (first coord) (second coord) val)))))
 
 (defun test-main()
-  (let ((ret (main-standalone)))
-    (if (not (eq ret NIL))
+  (let ((ret (multiple-value-bind (x y val) (main-standalone) (list x y val))))
+    #|(if (not (eq ret NIL))
 	(setf ret (multiple-value-bind 
 			(x y val) 
 		      (main-standalone)
-		    (list x y val))))
+		    (list x y val))))|#
     (do ()
-	((eq ret NIL))
+	((eq (first ret) NIL))
       (setf (aref +GRID+ (first ret) (second ret))
 	    (third ret))
       (setf ret (main-standalone))
