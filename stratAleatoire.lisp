@@ -305,7 +305,7 @@
 				  :test #'equal))
 		    (setf longueur (1- longueur))))))
 	  
-	  (values (second coord) (first coord) val)))))
+	  (values (first coord) (second coord) val)))))
 
 (defun test-main()
   (let ((ret (main-standalone)))
