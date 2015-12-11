@@ -371,21 +371,13 @@
 
 (defun test-main()
   (let ((ret (multiple-value-bind (x y val) (main-standalone) (list x y val))))
-    #|(if (not (eq ret NIL))
-	(setf ret (multiple-value-bind 
-			(x y val) 
-		      (main-standalone)
-		    (list x y val))))|#
     (do ()
 	((eq (first ret) NIL))
       (setf (aref +GRID+ (first ret) (second ret))
 	    (third ret))
-      (setf ret (main-standalone))
-      (if (not (eq ret NIL))
-	  (setf ret (multiple-value-bind 
-			  (x y val) 
-			(main-standalone)
-		      (list x y val))))))
+      (setf ret (multiple-value-bind (x y val) 
+		    (main-standalone) 
+		  (list x y val)))))
   (print "fin"))
       
 
