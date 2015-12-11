@@ -64,6 +64,19 @@
 		(8 4 0 7 0 0 9 2 3)
 		(5 6 2 4 9 0 7 8 1))))
 
+(defparameter *grid-3*
+  (make-array '(9 9) :initial-contents
+	      '((3 0 7 0 0 4 5 6 0)
+		(0 0 0 0 0 0 0 0 4)
+		(0 0 4 0 0 7 0 3 0)
+		(0 2 0 0 1 0 0 7 5)
+		(0 0 5 7 0 0 9 0 0)
+		(7 0 0 0 5 0 6 0 8)
+		(9 0 3 0 2 0 0 8 7)
+		(0 0 2 0 8 3 4 5 6)
+		(8 0 0 0 7 5 2 9 3))))
+
+
 
 ;;tableau contenant tous les coups possibles pour chaque case
 (defparameter +COUPS-POSSIBLES+
@@ -223,7 +236,7 @@
 		    (setf coord (list x y))
 		    (setf val (first (aref +COUPS-POSSIBLES+ x y)))))))
 
-	  (if (not (equal val NIL)) ;;si il existe une case dans ligne étant la seule à pouvoir contenir une valeur
+	  (if (equal val NIL) ;;si il existe une case dans ligne étant la seule à pouvoir contenir une valeur
 	      (do ((j 0 (1+ j))) ;;parcours ordonnée
 		  ((>= j +LONG-SIZE+)
 		   (not (equal val NIL)))
@@ -240,7 +253,7 @@
 			(setf coord (list i j))
 			(setf val (first diff))))))))
 
-	  (if (not (equal val NIL)) ;;si il existe une case dans colonne étant la seule à pouvoir contenir une valeur
+	  (if (equal val NIL) ;;si il existe une case dans colonne étant la seule à pouvoir contenir une valeur
 	      (do ((j 0 (1+ j))) ;;parcours abscisse
 		  ((>= j +LONG-SIZE+)
 		   (not (equal val NIL)))
@@ -256,7 +269,7 @@
 			(setf coord (list j i))
 			(setf val (first diff))))))))
 
-	  (if (not (equal val NIL));;s'il existe une case dans le carré étant la seule à pouvoir contenir une valeur
+	  (if (equal val NIL);;s'il existe une case dans le carré étant la seule à pouvoir contenir une valeur
 	      (do ((i 0 (1+ i)));;parcours abscisse
 		  ((>= i +LONG-SIZE+)
 		   (not (equal val NIL)))
@@ -282,6 +295,10 @@
 			(progn 
 			  (setf coord (list i j))
 			  (setf val (first diff))))))))
+	  
+	  ;;On met les coups possibles de la case à NIL
+	  (setf (aref +COUPS-POSSIBLES+ (first coord) (second coord)) '() )
+	  (remove coord +CASES-COUPS-POSSIBLES+ :test #'equal)
 			
 
 	  ;;On supprime les coups possibles val dans la ligne
