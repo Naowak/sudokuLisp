@@ -65,7 +65,7 @@
 
 ;;tableau contenant tous les coups possibles pour chaque case
 (defparameter +COUPS-POSSIBLES+
-  (make-array (list +LONG-SIZE+ +LONG-SIZE+)))
+  (creer-grid))
 
 ;;liste contenant toutes les cases où un coup est possible
 (defparameter +CASES-COUPS-POSSIBLES+
@@ -242,7 +242,7 @@
 			      :test #'equal))))
 	  
 	  ;;On supprime les coups possibles val dans la colonne
-	  (do ((j 0 (1+ j)))
+	  (do ((j 0 (1+ j)));;parcours ordonnee
 	      ((>= j +LONG-SIZE+))
 	    (setf (aref +COUPS-POSSIBLES+
 			(first coord)
@@ -263,11 +263,11 @@
 	  (do ((i (- (first coord) 
 		     (mod (first coord) +SIZE+)) 
 		  (1+ i)))
-	      ((>= i (+ (mod (first coord) +SIZE+) +SIZE+)))
+	      ((>= i (* (1+ (floor (first coord) +SIZE+)) +SIZE+) +SIZE+))
 	    (do ((j (- (second coord) 
 		       (mod (second coord) +SIZE+)) 
 		    (1+ j)))
-		((>= j (+ (mod (second coord) +SIZE+) +SIZE+)))
+		((>= j (* (1+ (floor (second coord) +SIZE+)) +SIZE+) +SIZE+))
 	      (setf (aref +COUPS-POSSIBLES+ i j)
 		    (remove val (aref +COUPS-POSSIBLES+ i j) 
 			    :test #'equal))
@@ -279,7 +279,6 @@
 			(remove (list i j)
 				+CASES-COUPS-POSSIBLES+ 
 				:test #'equal)))))
-	  
 	  (values (first coord) (second coord) val)))))
 
 (defun test-main()
