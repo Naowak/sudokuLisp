@@ -236,17 +236,16 @@
 		    (setf coord (list x y))
 		    (setf val (first (aref +COUPS-POSSIBLES+ x y)))))))
 
-	  (if (equal val NIL) ;;si il existe une case dans ligne étant la seule à pouvoir contenir une valeur
+	  (if (equal val NIL) ;;si il existe une case dans une ligne étant la seule à pouvoir contenir une valeur
 	      (do ((j 0 (1+ j))) ;;parcours ordonnée
 		  ((>= j +LONG-SIZE+)
 		   (not (equal val NIL)))
 		(do ((i 0 (1+ i))) ;;parcours abscisse
-		    ((>= i +LONG-SIZE+)
+		    ((>= i (1- +LONG-SIZE+))
 		     (not (equal val NIL)))
 		  (let ((diff (aref +COUPS-POSSIBLES+ i j))) ;;2eme parcours abscisse
 		    (do ((k (1+ i) (1+ k))) ;;on supprime si 2ème occurence ailleurs
-			((>= k +LONG-SIZE+)
-			 (not (equal val NIL)))
+			((>= k +LONG-SIZE+))
 		      (setf diff (set-difference diff (aref +COUPS-POSSIBLES+ k j))))
 		    (if (not (endp diff))
 		      (progn
@@ -258,7 +257,7 @@
 		  ((>= j +LONG-SIZE+)
 		   (not (equal val NIL)))
 		(do ((i 0 (1+ i))) ;;parcours ordonnée
-		    ((>= i +LONG-SIZE+)
+		    ((>= i (1- +LONG-SIZE+))
 		     (not (equal val NIL)))
 		  (let ((diff (aref +COUPS-POSSIBLES+ j i))) ;;2eme parcours ordonnée
 		    (do ((k (1+ i) (1+ k))) ;;on supprime si 2ème occurence ailleurs
@@ -341,11 +340,11 @@
 	  (do ((i (- (first coord) 
 		     (mod (first coord) +SIZE+)) 
 		  (1+ i)))
-	      ((>= i (+ (mod (first coord) +SIZE+) +SIZE+)))
+	      ((>= i (* (1+ (floor (first coord) +SIZE+)) +SIZE+) +SIZE+))
 	    (do ((j (- (second coord) 
 		       (mod (second coord) +SIZE+)) 
 		    (1+ j)))
-		((>= j (+ (mod (second coord) +SIZE+) +SIZE+)))
+		((>= j (* (1+ (floor (second coord) +SIZE+)) +SIZE+) +SIZE+))
 	      (setf (aref +COUPS-POSSIBLES+ i j)
 		    (remove val (aref +COUPS-POSSIBLES+ i j) 
 			    :test #'equal))
