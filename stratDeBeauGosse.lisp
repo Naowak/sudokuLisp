@@ -227,6 +227,7 @@
     (if (<= longueur 0)
 	NIL
 	(progn
+	  
 	  (do ((i 0 (1+ i))) ;;si il existe une cases avec une seule possibilité
 	      ((>= i longueur))
 	    (let ((x (first (nth i +CASES-COUPS-POSSIBLES+)))
@@ -250,7 +251,17 @@
 		    (if (not (endp diff))
 		      (progn
 			(setf coord (list i j))
-			(setf val (first diff))))))))
+			(setf val (first diff))))))
+		(let ((diff (aref +COUPS-POSSIBLES+ (1- +LONG-SIZE+) j)))
+		  (do ((i (- +LONG-SIZE+ 2) (1- i)))
+		      ((< i 0))
+		    (setf diff (set-difference diff (aref +COUPS-POSSIBLES+ i j))))
+		  (if (not (endp diff))
+		      (progn
+			(setf coord (list (1- +LONG-SIZE+) j))
+			(setf val (first diff))
+			(print 1))))))
+		  
 
 	  (if (equal val NIL) ;;si il existe une case dans colonne étant la seule à pouvoir contenir une valeur
 	      (do ((j 0 (1+ j))) ;;parcours abscisse
@@ -266,7 +277,16 @@
 		    (if (not (endp diff))
 		      (progn
 			(setf coord (list j i))
-			(setf val (first diff))))))))
+			(setf val (first diff))))))
+		(let ((diff (aref +COUPS-POSSIBLES+ j (1- +LONG-SIZE+))))
+		  (do ((i (- +LONG-SIZE+ 2) (1- i)))
+		      ((< i 0))
+		    (setf diff (set-difference diff (aref +COUPS-POSSIBLES+ j i))))
+		  (if (not (endp diff))
+		      (progn
+			(setf coord (list j (1- +LONG-SIZE+)))
+			(setf val (first diff))
+			(print 2))))))
 
 	  (if (equal val NIL);;s'il existe une case dans le carré étant la seule à pouvoir contenir une valeur
 	      (do ((i 0 (1+ i)));;parcours abscisse
@@ -293,7 +313,31 @@
 		    (if (not (endp diff))
 			(progn 
 			  (setf coord (list i j))
-			  (setf val (first diff))))))))
+			  (setf val (first diff)))))))
+	      
+	      (do ((i 0 (1+ i)))
+		  ((>= i +SIZE+))
+		(do ((j 0 (1+ j)))
+		    ((>= j +SIZE+))
+		  (let* ((x (* +SIZE+ i))
+			 (y (* +SIZE+ j))
+			 (xmax (+ x (1- +SIZE+)))
+			 (ymax (+ y (1- +SIZE+)))
+			 (diff (aref +COUPS-POSSIBLES+ xmax ymax)))
+		    (do ((k (1- +SIZE+) (1- k)))
+			((< k 0))
+		      (do ((l (1- +SIZE+) (1- l)))
+			  ((< l 0))
+			(if (not (and (eq (+ x k) xmax)
+				      (eq (+ y l) ymax)))
+			    (setf diff (set-difference diff (aref +COUPS-POSSIBLES+
+								  (+ x k)
+								  (+ y l)))))))
+		    (if (not (endp diff))
+			(progn 
+			  (setf coord (list xmax ymax))
+			  (setf val (first diff))
+			  (print 3)))))))
 	  
 	  ;;On met les coups possibles de la case à NIL
 	  (setf (aref +COUPS-POSSIBLES+ (first coord) (second coord)) '() )
